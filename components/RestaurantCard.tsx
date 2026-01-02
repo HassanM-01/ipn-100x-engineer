@@ -64,10 +64,10 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           📍 {restaurant.address}
         </p>
 
-        {/* TODO: Workshop Exercise 1 - Add opening hours display */}
-        {/* The data includes openingHours and closingHours fields */}
-        {/* Display them here with appropriate formatting */}
-        {/* Consider showing "Open Now" or "Closed" status */}
+        {/* Opening hours display with current status */}
+        <div className="mb-2">
+          {getOpenStatus(restaurant.openingHours, restaurant.closingHours)}
+        </div>
 
         <p className="text-sm text-gray-500 line-clamp-2">{restaurant.description}</p>
 
@@ -108,4 +108,41 @@ function getCuisineEmoji(cuisine: string): string {
   };
 
   return cuisineEmojis[cuisine] || '🍽️';
+}
+
+// Helper function to format time from 24-hour to 12-hour format
+function formatTime(time: string): string {
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${displayHour}:${minutes} ${ampm}`;
+}
+
+// Helper function to check if restaurant is currently open
+function getOpenStatus(openingHours: string, closingHours: string): JSX.Element {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTime = currentHour * 60 + currentMinute;
+
+  const [openHour, openMinute] = openingHours.split(':').map(Number);
+  const [closeHour, closeMinute] = closingHours.split(':').map(Number);
+  const openTime = openHour * 60 + openMinute;
+  const closeTime = closeHour * 60 + closeMinute;
+
+  const isOpen = currentTime >= openTime && currentTime < closeTime;
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="text-gray-600">
+        🕐 {formatTime(openingHours)} - {formatTime(closingHours)}
+      </span>
+      {isOpen ? (
+        <span className="text-green-600 font-semibold">Open Now</span>
+      ) : (
+        <span className="text-red-600 font-semibold">Closed</span>
+      )}
+    </div>
+  );
 }
